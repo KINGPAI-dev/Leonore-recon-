@@ -129,120 +129,288 @@ export default function App() {
             active={activeTab === 'email'} 
             icon={Mail} 
             label="Email Address" 
-            onClick={() => setActiveTab('email')} 
+import React, { useState } from 'react';
+import {
+  Search,
+  Mail,
+  Phone,
+  User,
+  Globe,
+  Shield,
+  Terminal,
+  Loader2,
+  CheckCircle2,
+  XCircle
+} from 'lucide-react';
+
+const Card = ({ children, className = "" }) => (
+  <div
+    className={`bg-gray-900 border border-gray-800 rounded-xl overflow-hidden ${className}`}
+  >
+    {children}
+  </div>
+);
+
+const NavButton = ({ active, icon: Icon, label, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+      active
+        ? "border-purple-500 text-purple-400 bg-purple-500/10"
+        : "border-transparent text-gray-500 hover:text-gray-300"
+    }`}
+  >
+    <Icon size={18} />
+    <span className="text-sm font-medium">{label}</span>
+  </button>
+);
+
+const ResultRow = ({ site, status }) => (
+  <div className="flex items-center justify-between p-3 border-b border-gray-800">
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded bg-gray-800 flex items-center justify-center text-xs font-bold">
+        {site[0]}
+      </div>
+
+      <span>{site}</span>
+    </div>
+
+    {status === "found" ? (
+      <div className="flex items-center gap-1 text-green-400 text-xs">
+        <CheckCircle2 size={14} />
+        FOUND
+      </div>
+    ) : (
+      <div className="flex items-center gap-1 text-gray-500 text-xs">
+        <XCircle size={14} />
+        NOT FOUND
+      </div>
+    )}
+  </div>
+);
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState("email");
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState(null);
+  const [terminalLog, setTerminalLog] = useState([]);
+
+  const addLog = (msg) => {
+    setTerminalLog((prev) => [
+      ...prev,
+      `[${new Date().toLocaleTimeString()}] ${msg}`
+    ].slice(-5));
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    if (!query) return;
+
+    setLoading(true);
+    setResults(null);
+    setTerminalLog([]);
+
+    addLog(`Memulai scan ${activeTab}: ${query}`);
+
+    try {
+      await new Promise((r) => setTimeout(r, 2000));
+
+      const mockResults = [
+        { site: "Instagram", status: "found" },
+        { site: "Twitter", status: "not_found" },
+        { site: "Facebook", status: "found" },
+        { site: "LinkedIn", status: "found" }
+      ];
+
+      setResults(mockResults);
+
+      addLog("Scan selesai.");
+    } catch (err) {
+      addLog("ERROR: gagal menjalankan engine.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* HEADER */}
+      <header className="border-b border-gray-800 bg-gray-950">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
+              <Shield size={22} />
+            </div>
+
+            <div>
+              <h1 className="text-xl font-bold">
+                LEONORE<span className="text-purple-500">.ROCKS</span>
+              </h1>
+
+              <p className="text-xs text-gray-500">
+                Elite OSINT Framework
+              </p>
+            </div>
+          </div>
+
+          <div className="text-xs text-purple-400">
+            SYSTEM ONLINE
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN */}
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        {/* NAV */}
+        <div className="flex flex-wrap border border-gray-800 rounded-t-xl overflow-hidden">
+          <NavButton
+            active={activeTab === "username"}
+            icon={User}
+            label="Username"
+            onClick={() => setActiveTab("username")}
           />
-          <NavButton 
-            active={activeTab === 'phone'} 
-            icon={Phone} 
-            label="Telephone" 
-            onClick={() => setActiveTab('phone')} 
+
+          <NavButton
+            active={activeTab === "email"}
+            icon={Mail}
+            label="Email"
+            onClick={() => setActiveTab("email")}
           />
-          <NavButton 
-            active={activeTab === 'domain'} 
-            icon={Globe} 
-            label="Domain / IP" 
-            onClick={() => setActiveTab('domain')} 
+
+          <NavButton
+            active={activeTab === "phone"}
+            icon={Phone}
+            label="Phone"
+            onClick={() => setActiveTab("phone")}
+          />
+
+          <NavButton
+            active={activeTab === "domain"}
+            icon={Globe}
+            label="Domain"
+            onClick={() => setActiveTab("domain")}
           />
         </div>
 
-        {/* Search Engine Area */}
-        <Card className="rounded-t-none border-t-0 p-8 md:p-12 shadow-2xl relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-          
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto space-y-6">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold text-zinc-200">
-                Pencarian <span className="text-purple-500 italic">{activeTab.toUpperCase()}</span>
+        {/* SEARCH */}
+        <Card className="rounded-t-none border-t-0 p-8">
+          <form
+            onSubmit={handleSearch}
+            className="max-w-2xl mx-auto space-y-6"
+          >
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">
+                Pencarian {activeTab.toUpperCase()}
               </h2>
-              <p className="text-zinc-500 text-sm">Masukkan target untuk memulai audit keamanan secara mendalam.</p>
+
+              <p className="text-gray-500 text-sm mt-2">
+                Masukkan target untuk memulai audit.
+              </p>
             </div>
 
-            <div className="relative group">
+            <div className="relative">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={activeTab === 'email' ? "example@email.com" : "Target identifier..."}
-                className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-xl px-6 py-4 text-lg focus:outline-none focus:border-purple-600 transition-all placeholder:text-zinc-700"
+                placeholder="Masukkan target..."
+                className="w-full bg-gray-950 border border-gray-700 rounded-xl px-5 py-4 outline-none"
               />
-              <button 
+
+              <button
                 type="submit"
                 disabled={loading}
-                className="absolute right-2 top-2 bottom-2 bg-purple-600 hover:bg-purple-500 text-white px-6 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+                className="absolute right-2 top-2 bottom-2 bg-purple-600 hover:bg-purple-500 px-5 rounded-lg flex items-center gap-2"
               >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
-                <span className="font-bold">SCAN</span>
+                {loading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Search size={18} />
+                )}
+
+                <span>SCAN</span>
               </button>
             </div>
           </form>
 
-          {/* Terminal Console (Realtime Feedback) */}
+          {/* TERMINAL */}
           {(loading || terminalLog.length > 0) && (
-            <div className="max-w-2xl mx-auto mt-8 bg-black/50 rounded-lg p-4 font-mono text-[11px] border border-zinc-800">
-              <div className="flex items-center gap-2 mb-2 text-zinc-500">
+            <div className="max-w-2xl mx-auto mt-8 bg-black border border-gray-800 rounded-lg p-4 font-mono text-xs">
+              <div className="flex items-center gap-2 text-gray-500 mb-3">
                 <Terminal size={12} />
-                <span>LEONORE ENGINE CONSOLE</span>
+                <span>LEONORE CONSOLE</span>
               </div>
+
               {terminalLog.map((log, i) => (
-                <div key={i} className="text-zinc-400 leading-relaxed">
-                  <span className="text-purple-500 opacity-50">$</span> {log}
+                <div key={i} className="text-gray-300 mb-1">
+                  $ {log}
                 </div>
               ))}
-              {loading && <div className="text-purple-400 animate-pulse mt-1 italic">Menganalisis footprint digital target...</div>}
             </div>
           )}
         </Card>
 
-        {/* Results Area */}
+        {/* RESULTS */}
         {results && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="mt-10 grid md:grid-cols-2 gap-6">
             <Card>
-              <div className="bg-zinc-800/50 px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-                <h3 className="font-bold text-sm uppercase tracking-tighter">Footprint Analysis</h3>
-                <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded font-bold uppercase tracking-widest">Active</span>
+              <div className="px-4 py-3 border-b border-gray-800 bg-gray-800/50">
+                <h3 className="font-bold text-sm">
+                  FOOTPRINT ANALYSIS
+                </h3>
               </div>
-              <div className="divide-y divide-zinc-800">
-                {results.map((res, i) => (
-                  <ResultRow key={i} site={res.site} status={res.status} />
-                ))}
-              </div>
+
+              {results.map((res, i) => (
+                <ResultRow
+                  key={i}
+                  site={res.site}
+                  status={res.status}
+                />
+              ))}
             </Card>
 
-            <div className="space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-purple-900/10 to-zinc-900">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <Shield className="text-purple-400" size={20} /> Intelligence Summary
-                </h3>
-                <p className="text-sm text-zinc-400 leading-relaxed mb-4">
-                  Hasil pencarian menunjukkan target memiliki profil aktif di beberapa platform media sosial. 
-                  Audit ini dilakukan menggunakan engine <span className="text-zinc-200">Holehe v2.x</span> dan 
-                  <span className="text-zinc-200"> Ignorant v1.2</span>.
-                </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800">
-                    <div className="text-[10px] text-zinc-500 uppercase">Total Checked</div>
-                    <div className="text-xl font-bold">120+ Sites</div>
+            <Card className="p-6">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Shield size={18} className="text-purple-400" />
+                Intelligence Summary
+              </h3>
+
+              <p className="text-sm text-gray-400 leading-relaxed">
+                Target memiliki beberapa footprint digital aktif
+                pada platform media sosial dan layanan publik.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                  <div className="text-xs text-gray-500">
+                    TOTAL CHECKED
                   </div>
-                  <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800">
-                    <div className="text-[10px] text-zinc-500 uppercase">Identity Match</div>
-                    <div className="text-xl font-bold text-purple-400">78%</div>
+
+                  <div className="text-xl font-bold mt-1">
+                    120+
                   </div>
                 </div>
-              </Card>
-              
-              <button className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl font-bold text-sm transition-all border border-zinc-700 shadow-lg uppercase tracking-widest flex items-center justify-center gap-2">
-                Download PDF Report
-              </button>
-            </div>
+
+                <div className="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                  <div className="text-xs text-gray-500">
+                    MATCH RATE
+                  </div>
+
+                  <div className="text-xl font-bold text-purple-400 mt-1">
+                    78%
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-900 py-8 text-center">
-        <p className="text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-          &copy; 2026 PAI LEONORE - ALL RIGHTS RESERVED
-        </p>
+      {/* FOOTER */}
+      <footer className="border-t border-gray-900 py-6 text-center text-xs text-gray-600">
+        © 2026 PAI LEONORE
       </footer>
     </div>
   );
