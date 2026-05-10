@@ -1,0 +1,14 @@
+flask
+flask-cors
+gunicorn
+holehe
+ignorant
+sherlock
+3.  **Langkah di Termux**:
+Setelah file-file di GitHub siap, kamu bisa men-*clone* repo tersebut ke Termux agar bisa kita jalankan secara lokal sebelum nanti kita sebar ke internet:
+```bash
+git clone https://github.com/KINGPAI-OFFICIAL/Leonore-recon
+cd Leonore-recon/backend
+pip install -r requirements.txt
+python app.py
+
